@@ -1,18 +1,41 @@
 # Deutsche Bank Coding Challenge
 
-After the simplest solution to be found in branch [1_simple_solution](https://github.com/errfld/db_coding_challenge_crypto_exchange/tree/1_simple_solution) I started with CI/CD and created a simple pipeline based on github actions.
-While github action are new to me, as I typically use gitlab, best-practices were no concern for this challenge. So this has already be a win, I learned something new.
+After the simplest solution to be found in branch [1_simple_solution](https://github.com/errfld/db_coding_challenge_crypto_exchange/tree/1_simple_solution) I started with CI/CD and created a simple pipeline based on github actions, this step can be found at [2_ci-cd](https://github.com/errfld/db_coding_challenge_crypto_exchange/tree/2_ci-cd).
+
+The next step is some refactoring to tidy up the code and make it easier to evolve in the future.
 
 ## What changed?
 
-Till this step frontend and backend had to be started by either `yarn dev` in case of the frontend or `mvn spring-boot:run` in case of the backend, and this is absolutly fine for development, but we have to pave the road to production.
-I assume a container environment compatible with OCI Containers, thus I created simple `Dockerfiles` to define the deployment artifacts.
+### Backend
 
-The backend artifact is a small-ish footprint java container which allows us to run the spring boot application with a complete jre/jdk installed.
+I started with the backend and splitted the Endpoint files, in two separate endpoints, after that created Services which encapsulate the logic and pull it out of the endpoints. The `CurrencyService` for example gets its data injected, using the `HashMap` as a mock Database.
+Of course, this was made while creating new test and running the existing test to go forward with confidence.
 
-The frontend artifact is a simple nginx server, which servers the frontend application, but with a little bit of extra logic. I added a proxy definition to encapsulate the backend and facade it behind this reverse proxy making frontend development easier in the process and deployment also. Not the `/api` route defers to our backend service, in development and in production/staging. For development I had to configure the proxy in the vite config to ensure the same behavior.
+I added checks for `null` on most places and tests to ensure null checking.
 
-To deliver the artifacts I created github action which start a build process and run tests as far as they are provided. For this challenge I won't create any rules concerning coverage, static analysis and so on, keeping it simple.
-After build the artifacts will be published in githubs container registry.
+On the matter of code style, right now I kept most of the code imperative in favor over a more fluent code style, to keep it simple.
 
-In addition I created a [docker-compose file](docker-compose.yaml) to start the application with a simple `docker compose up`
+A lot of engineers prefer fluent code, but I sometime wonder why, as shown in this example:
+
+```java
+if (base.isEmpty())
+  throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Missing base currency");
+
+Optional<Currency> requestedBaseCurrency = currencyService.getCurrencyByCode(base.get());
+
+if (requestedBaseCurrency.isEmpty())
+  throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid base currency: " + base.get());
+
+Currency baseCurrency = requestedBaseCurrency.get();
+```
+
+In comparison to the following:
+
+```java
+Currency baseCurrency = currencyService
+  .getCurrencyByCode(base
+    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Missing base currency"))
+  ).orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid base currency: " + base.get()));
+```
+
+Both snippets do the exact same thing, and I personally think the first one is easier to read, but the second example more "elegant".
