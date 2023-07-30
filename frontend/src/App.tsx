@@ -18,14 +18,7 @@ function App() {
   )
 }
 
-const initialBaseData: CodesResponse = {
-  currencies: {
-    "USD": {
-      code: "USD",
-      description: "United States Dollar",
-    }
-  }
-}
+
 
 
 function CryptoExchangeRateApp() {
@@ -55,18 +48,34 @@ function CryptoExchangeRateApp() {
   )
 }
 
-function BaseCurrencyDropdown({ baseCode, setBaseCode }: { baseCode: string, setBaseCode: (code: string) => void }) {
-  const { data: baseData } = useQuery<CodesResponse>({
+function useBaseCodes() {
+  const initialBaseData: CodesResponse = {
+    currencies: {
+      "USD": {
+        code: "USD",
+        description: "United States Dollar",
+      }
+    }
+  }
+
+  const baseCodes = useQuery<CodesResponse>({
     queryKey: ['base'],
     queryFn: () => fetchAllCodes(),
     initialData: initialBaseData,
   });
+
+
+  return { data: baseCodes.data }
+}
+
+function BaseCurrencyDropdown({ baseCode, setBaseCode }: { baseCode: string, setBaseCode: (code: string) => void }) {
+  const { data } = useBaseCodes();
   return (
     <div className="dropdown">
       <label tabIndex={0} className="btn btn-primary m-1">{baseCode}</label>
       <ul tabIndex={0} className="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52">
         {
-          Object.keys(baseData.currencies).map((key) =>
+          Object.keys(data.currencies).map((key) =>
             <li key={key} onClick={() => setBaseCode(key)}><a>{key}</a></li>
           )
         }
@@ -88,7 +97,7 @@ function WatchListTable({ data, remove }: { data: CurrencyWithRate[], remove: (c
           <tr key={row.code}>
             <td>{row.code}</td>
             <td>{row.description}</td>
-            <td>{row.rate}</td>
+            <td>{row.rate.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
             <td>
               <RemoveButton onClick={() => remove(row.code)} />
             </td>
@@ -141,7 +150,7 @@ function ExchangeRateTable({
           <tr key={row.code}>
             <td>{row.code}</td>
             <td>{row.description}</td>
-            <td>{row.rate}</td>
+            <td>{row.rate.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
             <td>
               {watchList.find(v => v.code === row.code)
                 ? <RemoveButton onClick={() => remove(row.code)} />

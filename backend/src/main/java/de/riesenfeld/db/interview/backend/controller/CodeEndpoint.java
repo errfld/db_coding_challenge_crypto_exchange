@@ -1,6 +1,7 @@
 package de.riesenfeld.db.interview.backend.controller;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -18,7 +19,8 @@ public class CodeEndpoint {
   private final CurrencyService currencyService;
 
   public CodeEndpoint(CurrencyService currencyService) {
-    this.currencyService = currencyService;
+    this.currencyService = Optional.of(currencyService)
+        .orElseThrow(() -> new IllegalArgumentException("currencyService must not be null"));
   }
 
   @RequestMapping("/codes")
