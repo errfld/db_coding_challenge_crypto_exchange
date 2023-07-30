@@ -19,10 +19,12 @@ jobs:
       - name: Install dependencies
         uses: borales/actions-yarn@v4
         with:
+          working-directory: ./frontend
           cmd: install
       - name: Build frontend
         uses: borales/actions-yarn@v4
         with:
+          working-directory: ./frontend
           cmd: build
       - name: Upload files
         uses: actions/upload-artifact@v3
