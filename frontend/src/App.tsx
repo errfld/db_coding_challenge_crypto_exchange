@@ -60,7 +60,7 @@ const removeIcon = <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" f
 function CryptoExchangeRateApp() {
   const { data: baseData } = useQuery<CodesResponse>({
     queryKey: ['base'],
-    queryFn: async () => await (await fetch("http://localhost:8080/codes")).json(),
+    queryFn: async () => await (await fetch("/api/codes")).json(),
     initialData: initialBaseData,
   });
   const [base, setBase] = useState("USD");
@@ -69,8 +69,8 @@ function CryptoExchangeRateApp() {
   const { data: ratesData } = useQuery<CurrencyWithRate[]>({
     queryKey: ['base', 'rates', base],
     queryFn: async () => {
-      const latestRates = await (await fetch(`http://localhost:8080/latest?base=${base}`)).json() as ExchangeRatesResponse
-      const codes = (await (await fetch("http://localhost:8080/codes")).json() as CodesResponse).currencies
+      const latestRates = await (await fetch(`/api/latest?base=${base}`)).json() as ExchangeRatesResponse
+      const codes = (await (await fetch("/api/codes")).json() as CodesResponse).currencies
       const res = Object.keys(latestRates.rates).map((key) => ({
         code: key,
         description: codes[key].description,

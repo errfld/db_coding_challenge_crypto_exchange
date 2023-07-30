@@ -1,0 +1,57 @@
+name: Build Frontend
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  build:
+    name: Build Frontend
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18.13
+      - name: Install dependencies
+        uses: borales/actions-yarn@v4
+        with:
+          cmd: install
+      - name: Build frontend
+        uses: borales/actions-yarn@v4
+        with:
+          cmd: build
+      - name: Upload files
+        uses: actions/upload-artifact@v3
+        with:
+          name: frontend
+          path: ./frontend/dist
+  publish:
+    name: Publish Frontend
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+      - name: Download dist
+        uses: actions/download-artifact@v3
+        with:
+          name: frontend
+          path: ./frontend/dist
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build the Docker image
+        working-directory: ./frontend
+        run: |
+          docker build . --tag ghcr.io/errfld/db_coding_challenge_crypto_exchange_frontend:latest
+          docker push ghcr.io/errfld/db_coding_challenge_crypto_exchange_frontend:latest

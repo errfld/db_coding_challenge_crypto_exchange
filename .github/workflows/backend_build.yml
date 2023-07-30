@@ -68,5 +68,5 @@ jobs:
       - name: Build the Docker image
         working-directory: ./backend
         run: |
-          docker build . --tag ghcr.io/errfld/db_coding_challenge_crypto_exchange:latest
-          docker push ghcr.io/errfld/db_coding_challenge_crypto_exchange:latest
+          docker build . --tag ghcr.io/errfld/db_coding_challenge_crypto_exchange_backend:latest
+          docker push ghcr.io/errfld/db_coding_challenge_crypto_exchange_backend:latest

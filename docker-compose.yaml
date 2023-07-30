@@ -1,0 +1,25 @@
+version: "3.7"
+
+services:
+  backend:
+    image: ghcr.io/errfld/db_coding_challenge_crypto_exchange_backend:latest
+    restart: unless-stopped
+    ports:
+      - 8080:8080
+    networks:
+      - internal1
+
+  frontend:
+    image: ghcr.io/errfld/db_coding_challenge_crypto_exchange_frontend:latest
+    ports:
+      - 80:80
+    networks:
+      - internal1
+      - external1
+    depends_on:
+      - backend
+
+networks:
+  internal1:
+  external1:
+    driver: bridge
