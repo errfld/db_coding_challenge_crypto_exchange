@@ -50,8 +50,11 @@ jobs:
   publish:
     needs: build
     runs-on: ubuntu-latest
+    permissions:
+      packages: write
+      contents: read
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: actions/download-artifact@v3
         with:
           name: backend
@@ -62,7 +65,7 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Build the hello-docker Docker image
+      - name: Build the Docker image
         working-directory: ./backend
         run: |
           docker build . --tag ghcr.io/errfld/db_coding_challenge_crypto_exchange:latest
