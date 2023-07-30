@@ -1,56 +1,36 @@
 # Deutsche Bank Coding Challenge
 
-After the simplest solution to be found in branch [1_simple_solution](https://github.com/errfld/db_coding_challenge_crypto_exchange/tree/1_simple_solution) I started with CI/CD and created a simple pipeline based on github actions, this step can be found at [2_ci-cd](https://github.com/errfld/db_coding_challenge_crypto_exchange/tree/2_ci-cd).
+To interview for **_Senior Full Stack Developer (f/m/x) – Digital Asset Custody Technology_**, I created this repository. To give some idea and hints about my workflow you can find different states of the application isolated as branches.
 
-The current step is some refactoring to tidy up the code and make it easier to evolve in the future.
+You may find the following branches:
 
-## What changed?
+- [1_simple_solution](https://github.com/errfld/db_coding_challenge_crypto_exchange/tree/1_simple_solution) dirty and not refined, but does what it is meant to do. An application, or part of it, in this state may be allegible es proof of concepts or some brainstorming in code as a basis for team internal discussion.
+- [2_ci-cd](https://github.com/errfld/db_coding_challenge_crypto_exchange/tree/2_ci-cd) simple CI/CD capabilities were added to allow going faster further down the road and was a new experience for me to setup github actions and using the github container registry.
+- [3_refactor-1](https://github.com/errfld/db_coding_challenge_crypto_exchange/tree/3_refactor-1) started a refactoring process to encapsulate functionality and increase maintainability as well as ease of future improvements.
+- [main](https://github.com/errfld/db_coding_challenge_crypto_exchange/tree/main) current development branch. Due to time constraints and pragmatism I am not sure how far I may improve on the code quality, because I assume you would just like to see if you applicant is able to get things done and improve from there and this is what I did.
 
-### Backend
+### How to start
 
-I started with the backend and splitted the Endpoint files, in two separate endpoints, after that created Services which encapsulate the logic and pull it out of the endpoints. The `CurrencyService` for example gets its data injected, using the `HashMap` as a mock Database.
-Of course, this was made while creating new tests beforehand and running the existing tests to go forward with confidence.
+Prerequisites: java 17, node 18, docker (with compose), make
 
-I added checks for `null` on most places and tests to ensure null checking.
-
-On the matter of code style, right now I kept most of the code imperative in favor over a more fluent code style, to keep it simple.
-
-A lot of engineers prefer fluent code, but I sometime wonder why, as shown in this example:
-
-```java
-if (base.isEmpty())
-  throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Missing base currency");
-
-Optional<Currency> requestedBaseCurrency = currencyService.getCurrencyByCode(base.get());
-
-if (requestedBaseCurrency.isEmpty())
-  throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid base currency: " + base.get());
-
-Currency baseCurrency = requestedBaseCurrency.get();
+```sh
+git clone https://github.com/errfld/db_coding_challenge_crypto_exchange.git
+cd db_coding_challenge_crypto_exchange
+make run
 ```
 
-In comparison to the following:
+`make run` builds the backend, the frontend, creates docker images and starts these images with docker compose.
 
-```java
-Currency baseCurrency = currencyService
-  .getCurrencyByCode(base
-    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Missing base currency"))
-  ).orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid base currency: " + base.get()));
-```
+### Next possible steps
 
-Both snippets do the exact same thing, and I personally think the first one is easier to read, but the second example more "elegant".
+- Adding testing library for the frontend. I would go with something like `vitest` + `jsdom` + `react-testing-library`
+- deployment to ECS or a similar service
+- migrate development to [devcontainers](https://code.visualstudio.com/docs/devcontainers/containers)
+- stablize UI behavior (jumps in columns)
+- work on UX and perhaps remove currencys from the lower table after they are added to the watchlist
+- refactor the API, structures like `key` -> `{ key, value }` are confusing at best
+- showcasing websockets and the ability to update the UI whenever an exchange rate would change
 
-### Frontend
+### What is most urgent now?
 
-Within the frontend I also started encapsulation and refactoring out components. The app had been a single Component style app, which is hard to work with with teams or even for a single person, while keeping your sanity.
-
-The single component is now splitted in:
-
-- BaseCurrencyDropdown (the dropdown in the upper right)
-- WatchListTable
-- ExchangeRateTable
-- Add/Remove Buttons
-
-This components can be placed in different files, but an application this small has no need for it, I refactored the Buttons as the "most atomic" style components in their own file, just for demonstration purposes.
-
-Furthermore did I refactor the api and types our in its own file, to not _pollute_ the React Components. Data between Components is past by properties, as I did not see a real benefit of the introduction of even small state libraries like zustand or jotai.
+Calling me, of course 😎
