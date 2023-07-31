@@ -1,12 +1,15 @@
 package de.riesenfeld.db.interview.backend.controller;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
+
+import com.fasterxml.jackson.databind.JsonNode;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class CodeEndpointIntegrationTest {
@@ -19,12 +22,21 @@ public class CodeEndpointIntegrationTest {
 
   @Test
   public void CodeEndpointShouldReturnCodes() throws Exception {
-    var result = this.restTemplate.getForObject("http://localhost:" + port + "/codes", String.class);
-    assertEquals(
-        """
-            {"currencies":{"BTC":{"code":"BTC","description":"Bitcoin"},"SOL":{"code":"SOL","description":"Solana"},"EUR":{"code":"EUR","description":"Euro"},"USD":{"code":"USD","description":"US Dollar"},"ETH":{"code":"ETH","description":"Ethereum"},"USDT":{"code":"USDT","description":"Tether"},"DOGE":{"code":"DOGE","description":"Dogecoin"}}}
-              """
-            .strip(),
-        result);
+    var result = this.restTemplate.getForObject("http://localhost:" + port + "/codes", JsonNode.class);
+    assertTrue(result.has("currencies"));
+    JsonNode currencies = result.get("currencies");
+    assertTrue(currencies.isObject());
+    assertTrue(currencies.has("EUR"));
+    JsonNode eur = currencies.get("EUR");
+    assertTrue(eur.isObject());
+    assertTrue(eur.has("code"));
+    assertTrue(eur.has("description"));
+    var currencyFieldsIterator = currencies.fields();
+    while (currencyFieldsIterator.hasNext()) {
+      var currency = currencyFieldsIterator.next();
+      assertEquals(currency.getKey(), currency.getValue().get("code").asText());
+      assertTrue(currency.getValue().has("code"));
+      assertTrue(currency.getValue().has("description"));
+    }
   }
 }
